@@ -17,7 +17,15 @@ function render() {
   let labelEl = document.createElement("label");
   let checkboxEl = document.createElement("input");
   checkboxEl.type = "checkbox";
-
+  checkboxEl.checked = true;
+  checkboxEl.addEventListener("click", function () {
+    let completedUl = document.getElementById("completed_list");
+    if (checkboxEl.checked) {
+      completedUl.style.display = "block";
+    } else {
+      completedUl.style.display = "none";
+    }
+  });
   document.body.appendChild(mainEl);
   sectionOneEl.append(h2El, labelEl);
   labelEl.append("Show completed", checkboxEl);
@@ -42,8 +50,8 @@ function render() {
   formEl.addEventListener("submit", function (event) {
     event.preventDefault();
     let newtodo = { text: formEl.text.value, completed: false };
-    formEl.reset();
-    renderToDo(newtodo);
+    state.push(newtodo);
+    render();
   });
 
   let sectionThreeEl = document.createElement("section");
@@ -55,15 +63,21 @@ function render() {
   sectionThreeEl.append(h2El3, ulEl);
 
   let sectionFourEl = document.createElement("section");
+
   let h2El4 = document.createElement("h2");
   h2El4.className = "title";
   h2El4.textContent = "COMPLETED";
   let ulEl2 = document.createElement("ul");
+  ulEl2.id = "completed_list";
   ulEl2.className = "completed-list";
 
   sectionFourEl.append(h2El4, ulEl2);
 
   mainEl.append(sectionOneEl, sectionTwoEl, sectionThreeEl, sectionFourEl);
+  for (let todos of state) {
+    if (todos.completed === false) renderToDo(todos);
+    else completedToDo(todos);
+  }
 }
 
 function renderToDo(todo) {
@@ -71,6 +85,7 @@ function renderToDo(todo) {
 
   let liEl = document.createElement("li");
   liEl.className = "todo";
+  liEl.id = "todo.text";
   let divEl = document.createElement("div");
   divEl.className = "completed-section";
   let inputEl = document.createElement("input");
@@ -78,14 +93,14 @@ function renderToDo(todo) {
   inputEl.type = "checkbox";
   inputEl.addEventListener("click", function () {
     todo.completed = !todo.completed;
-    ulEl.removeChild(liEl);
-    completedToDo(todo);
+    render();
   });
   divEl.append(inputEl);
   let divEl2 = document.createElement("div");
   divEl2.className = "text-section";
   let pEl = document.createElement("p");
   pEl.className = "text";
+  pEl.id = "text";
   pEl.textContent = todo.text;
   divEl2.append(pEl);
   let divEl3 = document.createElement("div");
@@ -94,7 +109,9 @@ function renderToDo(todo) {
   buttonEl.className = "delete";
   buttonEl.textContent = "Delete";
   buttonEl.addEventListener("click", function () {
-    ulEl.removeChild(liEl);
+    let text = todo.text;
+    deleteTodo(text);
+    render();
   });
 
   divEl3.append(buttonEl);
@@ -124,7 +141,9 @@ function completedToDo(todo) {
   buttonEl.className = "delete";
   buttonEl.textContent = "Delete";
   buttonEl.addEventListener("click", function () {
-    ulEl.removeChild(liEl);
+    let text = todo.text;
+    deleteTodo(text);
+    render();
   });
   divEl3.append(buttonEl);
   liEl.append(divEl, divEl2, divEl3);
@@ -134,13 +153,12 @@ function completedToDo(todo) {
     : (inputEl.checked = false);
   inputEl.addEventListener("click", function () {
     todo.completed = !todo.completed;
-    ulEl.removeChild(liEl);
-    renderToDo(todo);
+    render();
   });
 }
-render();
 
-for (let todos of state) {
-  if (todos.completed === false) renderToDo(todos);
-  else completedToDo(todos);
+function deleteTodo(text) {
+  let updatedTodos = state.filter((todo) => todo.text !== text);
+  state = updatedTodos;
 }
+render();
